@@ -25,6 +25,7 @@ android {
         versionName = "11.2.1"
     }
 
+    
     buildTypes {
         debug {
             isMinifyEnabled = true
@@ -33,8 +34,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
         }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true
