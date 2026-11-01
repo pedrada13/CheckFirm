@@ -1,0 +1,108 @@
+
+name: Build CheckFirm APK
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: checkfirm-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compile Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare signing configuration
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$KEYSTORE_BASE64" ||
+                -z "$KEYSTORE_PROPERTIES" ||
+                -z "$GOOGLE_SERVICES_JSON" ]]; then
+            echo "::error::Configure KEYSTORE_BASE64, KEYSTORE_PROPERTIES and GOOGLE_SERVICES_JSON in repository secrets."
+            exit 1
+          fi
+
+          mkdir -p app
+
+          printf '%s' "$KEYSTORE_BASE64" \
+            | base64 --decode > app/release.jks
+
+          printf '%s' "$KEYSTORE_PROPERTIES" \
+            > keystore.properties
+
+          printf '%s' "$GOOGLE_SERVICES_JSON" \
+            > app/google-services.json
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build release APK
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Prepare APK for publishing
+        id: apk
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APK_PATH="app/build/outputs/apk/release/app-release.apk"
+
+          if [[ ! -f "$APK_PATH" ]]; then
+            echo "::error::Release APK was not generated at $APK_PATH"
+            find app/build/outputs/apk -type f -name '*.apk' || true
+            exit 1
+          fi
+
+          VERSION="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' app/build.gradle.kts | head -n 1)"
+
+          if [[ -z "$VERSION" ]]; then
+            VERSION="unknown"
+          fi
+
+          OUTPUT="CheckFirm-${VERSION}.apk"
+          cp "$APK_PATH" "$OUTPUT"
+
+          echo "path=$OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CheckFirm-APK
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.apk.outputs.path }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
