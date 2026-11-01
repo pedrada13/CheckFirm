@@ -1,10 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
-
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties()
-keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.androidx.room)
