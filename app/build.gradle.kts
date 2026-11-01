@@ -26,7 +26,7 @@ android {
     }
 
     
-        buildTypes {
+     buildTypes {
         debug {
             isMinifyEnabled = true
             isShrinkResources = true
