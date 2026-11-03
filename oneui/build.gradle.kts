@@ -14,22 +14,20 @@ android {
 
     sourceSets {
         getByName("main") {
-            java {
-                srcDir("src/divider/kotlin")
-                srcDir("src/edittext/kotlin")
-                srcDir("src/spinner/kotlin")
-                srcDir("src/switch/kotlin")
-                srcDir("src/tab/kotlin")
-            }
+            kotlin.srcDir("src/divider/kotlin")
+            kotlin.srcDir("src/edittext/kotlin")
+            kotlin.srcDir("src/spinner/kotlin")
+            kotlin.srcDir("src/switch/kotlin")
+            kotlin.srcDir("src/tab/kotlin")
 
             res {
                 srcDir("src/checkbox/res")
-				srcDir("src/divider/res")
+                srcDir("src/divider/res")
                 srcDir("src/edittext/res")
-				srcDir("src/fab/res")
-				srcDir("src/progress/res")
-				srcDir("src/radiobutton/res")
-				srcDir("src/spinner/res")
+                srcDir("src/fab/res")
+                srcDir("src/progress/res")
+                srcDir("src/radiobutton/res")
+                srcDir("src/spinner/res")
                 srcDir("src/switch/res")
                 srcDir("src/tab/res")
             }
