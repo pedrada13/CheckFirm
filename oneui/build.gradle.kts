@@ -14,11 +14,12 @@ android {
 
     sourceSets {
         getByName("main") {
-            kotlin.srcDir("src/divider/kotlin")
-            kotlin.srcDir("src/edittext/kotlin")
-            kotlin.srcDir("src/spinner/kotlin")
-            kotlin.srcDir("src/switch/kotlin")
-            kotlin.srcDir("src/tab/kotlin")
+            // AGP 9's built-in Kotlin compiler reads Kotlin files from the Java source dirs.
+            java.srcDir("src/divider/kotlin")
+            java.srcDir("src/edittext/kotlin")
+            java.srcDir("src/spinner/kotlin")
+            java.srcDir("src/switch/kotlin")
+            java.srcDir("src/tab/kotlin")
 
             res {
                 srcDir("src/checkbox/res")
